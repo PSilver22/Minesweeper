@@ -228,9 +228,6 @@ class Minefield {
 			}
 		}
 
-		// if the win condition is true, stop running. Otherwise, continue running
-		this.isRunning = !condition;
-
 		return condition;
 	}
 }

@@ -35,16 +35,11 @@ class GameWindow {
 		this.width = GameWindow.tileSize * boardWidth;
 		this.height = GameWindow.tileSize * boardHeight + 50;
 
-		// create the score heading
-		let scoreBackground = document.createElement("div");
-		scoreBackground.style.cssText = `position: absolute; top: 0px; left: 0px; width: ${this.width}px; height: 50px; background-color: black;`;
-
 		this.flagTag = document.createElement("h1");
 		this.flagTag.style.cssText = `position: absolute; top: -25px; left: 5px; color: red; font-size: 40px;`;
 		this.updateRemainingFlags();
 
 		// add the elements to the html
-		document.body.appendChild(scoreBackground);
 		document.body.appendChild(this.flagTag);
 
 		// create the minefield
@@ -144,6 +139,7 @@ class GameWindow {
 			}
 
 			else if (this.board.checkWinCondition()) {
+				this.board.isRunning = false;
 				this.displayWin();
 			}
 		}
@@ -151,24 +147,27 @@ class GameWindow {
 
 	// displays win message
 	displayWin() {
-		alert("You win");
+		this.flagTag.innerText = "You win!";
 	}
 
 	// displays loss message
 	displayLoss() {
-		alert("You lost");
+		this.flagTag.innerText = "You lost.";
 	}
 
 	onRightClick(tagID) {
-		// get the index of the pressed button
-		let buttonIndex = GameWindow.getRowColumn(tagID);
+		if (this.board.isRunning) {
+			// get the index of the pressed button
+			let buttonIndex = GameWindow.getRowColumn(tagID);
 
-		// update the board
-		this.board.toggleFlag(buttonIndex[0], buttonIndex[1]);
-		this.updateMinefield();
+			// update the board
+			this.board.toggleFlag(buttonIndex[0], buttonIndex[1]);
+			this.updateMinefield();
 
-		if (this.board.checkWinCondition()) {
-			this.displayWin();
+			if (this.board.checkWinCondition()) {
+				this.board.isRunning = false;
+				this.displayWin();
+			}
 		}
 	}
 }
