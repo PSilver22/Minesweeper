@@ -30,4 +30,6 @@ function main() {
 				alert("ERROR: Please input 1, 2, or 3");
 		}
 	}
+
+	return game;
 }

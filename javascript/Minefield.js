@@ -229,7 +229,7 @@ class Minefield {
 
 	// returns the number of neighbors that are flagged
 	numFlaggedNeighbors(row, column) {
-		let neighbors = this.getTileNeighbors(row, column);
+		let neighbors = Minefield.getTileNeighbors(row, column);
 
 		// count the flagged neighbors
 		let numFlaggedNeighbors = 0;
@@ -240,17 +240,19 @@ class Minefield {
 				numFlaggedNeighbors += (this.map[currentNeighbor[0]][currentNeighbor[1]].isFlagged) ? 1 : 0;
 			}
 		}
+
+		return numFlaggedNeighbors;
 	}
 
 	// returns the number of neighbors that are hidden AND not flagged
 	numHiddenNeighbors(row, column) {
-		let neighbors = this.getTileNeighbors(row, column);
+		let neighbors = Minefield.getTileNeighbors(row, column);
 
 		// count the hidden neighbors
 		let numHiddenNeighbors = 0;
 		for (let index = 0; index < neighbors.length; ++index) {
 			let currentNeighbor = neighbors[index];
-			if (this.isLegalIndex(currentNeighbor[0], currentNeighbor[1])) {
+			if (this.isLegalIndex(...currentNeighbor)) {
 				// add 1 to numHiddenNeighbors if the current neighbor is hidden and not flagged, otherwise add 0
 				numHiddenNeighbors += (this.map[currentNeighbor[0]][currentNeighbor[1]].isHidden && !this.map[currentNeighbor[0]][currentNeighbor[1]].isFlagged) ? 1 : 0;
 			}
@@ -259,21 +261,103 @@ class Minefield {
 		return numHiddenNeighbors;
 	}
 
-	doNextMove() {
-		// if no note-able tiles have been opened yet, randomly click until a "zero pocket" is reached
-		if (!this.zeroTileOpened) {
-			let randomRow = Math.floor(Math.random() * this.height);
-			let randomColumn = Math.floor(Math.random() * this.width);
+	// returns an array of the row column pairs of the hidden neighbors that are not flagged.
+	getHiddenNeighbors(row, column) {
+		let neighbors = Minefield.getTileNeighbors(row, column);
+		let hiddenNeighbors = [];
 
-			this.activateTile(randomRow, randomColumn);
+		// loop through neighbors
+		for (let neighborIndex = 0; neighborIndex < neighbors.length; ++neighborIndex) {
+			let neighbor = neighbors[neighborIndex];
+
+			if (this.isLegalIndex(...neighbor)) {
+				// if the current neighbor is hidden and not flagged, add it to the hidden neighbor array
+				if (this.map[neighbor[0]][neighbor[1]].isHidden && !this.map[neighbor[0]][neighbor[1]].isFlagged) {
+					hiddenNeighbors.push(neighbor);
+				}
+			}
 		}
 
-		// otherwise, use logic to try to figure out which tiles are safe
-		else {
-			for (let row = 0; row < this.height; ++row) {
-				for (let column = 0; column < this.width; ++column) {
-					
+		return hiddenNeighbors;
+	}
+
+	// returns an array of the row column pairs of the flagged neighbors.
+	getFlaggedNeighbors(row, column) {
+		let neighbors = Minefield.getTileNeighbors(row, column);
+		let flaggedNeighbors = [];
+
+		// loop through neighbors
+		for (let neighborIndex = 0; neighborIndex < neighbors.length; ++neighborIndex) {
+			let neighbor = neighbors[neighborIndex];
+
+			if (this.isLegalIndex(...neighbor)) {
+				// if the current neighbor is hidden and not flagged, add it to the hidden neighbor array
+				if (this.map[neighbor[0]][neighbor[1]].isFlagged) {
+					flaggedNeighbors.push(neighbor);
 				}
+			}
+		}
+
+		return flaggedNeighbors;
+	}
+
+	// activates a random tile
+	activateRandomTile() {
+		let randomRow = Math.floor(Math.random() * this.height);
+		let randomColumn = Math.floor(Math.random() * this.width);
+
+		this.activateTile(randomRow, randomColumn);
+	}
+
+	// If possible, makes a move that is sure to be right.
+	// Returns true if a move was made, false otherwise.
+	// W.I.P
+	performLogicalMove() {
+		// loop through tiles and try to find a sure case
+		for (let row = 0; row < this.height; ++row) {
+			for (let column = 0; column < this.width; ++column) {
+				// find a revealed tile and check logical cases
+				if (!this.map[row][column].isHidden) {
+					let hiddenNeighborCount = this.numHiddenNeighbors(row, column);
+					let flaggedNeighborCount = this.numFlaggedNeighbors(row, column);
+
+					if (hiddenNeighborCount !== 0) {
+						let hiddenNeighbors = this.getHiddenNeighbors(row, column);
+						let neighbor = hiddenNeighbors[0];
+
+						// if the number of hidden tiles is equal to the key minus number of flagged neighbors, flag a hidden neighbor
+						if (Number(this.map[row][column].key) - flaggedNeighborCount === hiddenNeighborCount) {
+							this.map[neighbor[0]][neighbor[1]].isFlagged = true;
+
+							return true;
+						}
+
+						// if all the bombs are already flagged, open a hidden tile
+						else if (Number(this.map[row][column].key) === flaggedNeighborCount) {
+							this.map[neighbor[0]][neighbor[1]].isHidden = true;
+
+							return true;
+						}
+					}
+				}
+			}
+		}
+
+		return false;
+	}
+
+	// W.I.P
+	doNextMove() {
+		if (this.isRunning) {
+			
+			// if no note-able tiles have been opened yet, randomly click until a "zero pocket" is reached
+			if (!this.zeroTileOpened) {
+				this.activateRandomTile();
+			}
+
+			// otherwise, use logic to try to figure out which tiles are safe
+			else {
+				
 			}
 		}
 	}
