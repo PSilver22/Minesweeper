@@ -1,9 +1,10 @@
 function main() {
 	let setup = false;
-	
+	let game;
+
 	while (!setup) {
 		let difficulty = prompt("Input difficulty: (1, 2, 3)");
-		let game;
+		let solve = prompt("Should this board be solved by a bot? (yes / no)");
 
 		setup = true;
 

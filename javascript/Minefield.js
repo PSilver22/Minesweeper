@@ -7,6 +7,7 @@ class Minefield {
 		this.height = minefieldHeight;
 		this.numOfMines = numOfMines;
 		this.remainingFlags = numOfMines;
+		this.zeroTileOpened = false;
 		this.isRunning = true;
 
 		// array of arrays in the form [mineRow, mineColumn]
@@ -141,6 +142,7 @@ class Minefield {
 			case '0':
 			{
 				this.fillOpenSpaces(row, column);
+				this.zeroTileOpened = true;
 			}
 
 			// If the tile is anything else, show the tile
@@ -203,6 +205,55 @@ class Minefield {
 				// flip the tile at the given index and update remaining flags
 				this.map[row][column].isFlagged = true;
 				--this.remainingFlags;
+			}
+		}
+	}
+
+	// returns the number of neighbors that are flagged
+	numFlaggedNeighbors(row, column) {
+		let neighbors = this.getTileNeighbors(row, column);
+
+		// count the flagged neighbors
+		let numFlaggedNeighbors = 0;
+		for (let index = 0; index < neighbors.length; ++index) {
+			let currentNeighbor = neighbors[index];
+			if (this.isLegalIndex(currentNeighbor[0], currentNeighbor[1])) {
+				// add 1 to numFlaggedNeighbors if the current neighbor is flagged, otherwise add 0
+				numFlaggedNeighbors += (this.map[currentNeighbor[0]][currentNeighbor[1]].isFlagged) ? 1 : 0;
+			}
+		}
+	}
+
+	// returns the number of neighbors that are hidden AND not flagged
+	numHiddenNeighbors(row, column) {
+		let neighbors = this.getTileNeighbors(row, column);
+
+		// count the hidden neighbors
+		let numHiddenNeighbors = 0;
+		for (let index = 0; index < neighbors.length; ++index) {
+			let currentNeighbor = neighbors[index];
+			if (this.isLegalIndex(currentNeighbor[0], currentNeighbor[1])) {
+				// add 1 to numHiddenNeighbors if the current neighbor is hidden and not flagged, otherwise add 0
+				numHiddenNeighbors += (this.map[currentNeighbor[0]][currentNeighbor[1]].isHidden && !this.map[currentNeighbor[0]][currentNeighbor[1]].isFlagged) ? 1 : 0;
+			}
+		}
+
+		return numHiddenNeighbors;
+	}
+
+	doNextMove() {
+		if (!this.zeroTileOpened) {
+			let randomRow = Math.floor(Math.random() * this.height);
+			let randomColumn = Math.floor(Math.random() * this.width);
+
+			this.activateTile(randomRow, randomColumn);
+		}
+
+		else {
+			for (let row = 0; row < this.height; ++row) {
+				for (let column = 0; column < this.width; ++column) {
+					
+				}
 			}
 		}
 	}
