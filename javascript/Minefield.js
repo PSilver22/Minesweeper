@@ -136,6 +136,7 @@ class Minefield {
 			{
 				this.showMines();
 				this.isRunning = false;
+				break;
 			}
 			
 			// if the tile is an empty space, show all of the empty  spaces that can be connected with the tile
@@ -143,12 +144,15 @@ class Minefield {
 			{
 				this.fillOpenSpaces(row, column);
 				this.zeroTileOpened = true;
+
+				/* fall through to reveal the tile that was clicked (for the off-chance it's not revealed in fillOpenSpaces) */
 			}
 
 			// If the tile is anything else, show the tile
 			default:
 			{
-				this.map[row][column].isHidden = false;
+				this.revealSingleTile(row, column);
+				break;
 			}
 		}
 	}
@@ -161,14 +165,13 @@ class Minefield {
 		}
 	}
 
+	// fills all the spaces that are connecting zeroes from the given starting row and column
 	fillOpenSpaces(startingRow, startingColumn) {
 		let tileQueue = [];
 		this.r_fillOpenSpaces(startingRow, startingColumn, tileQueue);
 	}
 
 	r_fillOpenSpaces(row, column, tileQueue) {
-		this.map[row][column].isHidden = false;
-
 		if (this.map[row][column].key === '0') {
 			let neighbors = Minefield.getTileNeighbors(row, column); // get the neighbors of the current tile
 
@@ -176,17 +179,32 @@ class Minefield {
 				let neighbor = neighbors[neighborIndex]; // save the current neighbor
 
 				if (this.isLegalIndex(...neighbors[neighborIndex])) { // if the neighbor's index is in bounds
-					if (this.map[neighbor[0]][neighbor[1]].isHidden) { // if the neighbor isn't hidden
-						this.map[neighbor[0]][neighbor[1]].isHidden = false;
+					if (this.map[neighbor[0]][neighbor[1]].isHidden) { // if the neighbor is hidden
+						// reveals all the neighbors so that any numbers bordering a 0 gets revealed.
+						this.revealSingleTile(neighbor[0], neighbor[1]);
 						tileQueue.push([neighbor[0], neighbor[1]]);
 					}
 				}
 			}
 		}
 
-		// get the next tile from the queue
+		// recurse with the next tile from the queue
 		if (tileQueue.length != 0) {
 			this.r_fillOpenSpaces(...tileQueue.shift(), tileQueue);
+		}
+	}
+
+	// reveals the tile at the given row, column and nothing else
+	revealSingleTile(row, column) {
+		if (this.map[row][column].isHidden) {
+			// if flagged, unflag the tile and add back to the remaining flags
+			if (this.map[row][column].isFlagged) {
+				this.map[row][column].isFlagged = false;
+				++this.remainingFlags;
+			}
+
+			// reveal the tile
+			this.map[row][column].isHidden = false;
 		}
 	}
 
@@ -242,6 +260,7 @@ class Minefield {
 	}
 
 	doNextMove() {
+		// if no note-able tiles have been opened yet, randomly click until a "zero pocket" is reached
 		if (!this.zeroTileOpened) {
 			let randomRow = Math.floor(Math.random() * this.height);
 			let randomColumn = Math.floor(Math.random() * this.width);
@@ -249,6 +268,7 @@ class Minefield {
 			this.activateTile(randomRow, randomColumn);
 		}
 
+		// otherwise, use logic to try to figure out which tiles are safe
 		else {
 			for (let row = 0; row < this.height; ++row) {
 				for (let column = 0; column < this.width; ++column) {

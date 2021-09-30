@@ -4,8 +4,7 @@ function main() {
 
 	while (!setup) {
 		let difficulty = prompt("Input difficulty: (1, 2, 3)");
-		let solve = prompt("Should this board be solved by a bot? (yes / no)");
-
+		
 		setup = true;
 
 		// set the specific settings for each difficulty
