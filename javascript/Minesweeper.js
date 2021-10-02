@@ -31,5 +31,5 @@ function main() {
 		}
 	}
 
-	game.solve();
+	//game.solve();
 }

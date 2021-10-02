@@ -166,31 +166,21 @@ class Minefield {
 	}
 
 	// fills all the spaces that are connecting zeroes from the given starting row and column
-	fillOpenSpaces(startingRow, startingColumn) {
-		let tileQueue = [];
-		this.r_fillOpenSpaces(startingRow, startingColumn, tileQueue);
-	}
+	fillOpenSpaces(row, column) {
+		if (this.isLegalIndex(row, column)) {
+			if (this.map[row][column].isHidden) {
+				this.revealSingleTile(row, column);
 
-	r_fillOpenSpaces(row, column, tileQueue) {
-		if (this.map[row][column].key === '0') {
-			let neighbors = Minefield.getTileNeighbors(row, column); // get the neighbors of the current tile
+				if (this.map[row][column].key === '0') {
+					let neighbors = Minefield.getTileNeighbors(row, column);
+					
+					for (let neighborCount = 0; neighborCount < neighbors.length; ++neighborCount) {
+						let currNeighbor = neighbors[neighborCount];
 
-			for (let neighborIndex = 0; neighborIndex < neighbors.length; ++neighborIndex) { // loop through neighbors
-				let neighbor = neighbors[neighborIndex]; // save the current neighbor
-
-				if (this.isLegalIndex(...neighbors[neighborIndex])) { // if the neighbor's index is in bounds
-					if (this.map[neighbor[0]][neighbor[1]].isHidden) { // if the neighbor is hidden
-						// reveals all the neighbors so that any numbers bordering a 0 gets revealed.
-						this.revealSingleTile(neighbor[0], neighbor[1]);
-						tileQueue.push([neighbor[0], neighbor[1]]);
+						this.fillOpenSpaces(currNeighbor[0], currNeighbor[1]);
 					}
 				}
 			}
-		}
-
-		// recurse with the next tile from the queue
-		if (tileQueue.length != 0) {
-			this.r_fillOpenSpaces(...tileQueue.shift(), tileQueue);
 		}
 	}
 
@@ -320,7 +310,9 @@ class Minefield {
 					let hiddenNeighborCount = this.numHiddenNeighbors(row, column);
 					let flaggedNeighborCount = this.numFlaggedNeighbors(row, column);
 
+					// if there are neighbors that are hidden
 					if (hiddenNeighborCount !== 0) {
+						// get the first hidden neighbor
 						let hiddenNeighbors = this.getHiddenNeighbors(row, column);
 						let neighbor = hiddenNeighbors[0];
 

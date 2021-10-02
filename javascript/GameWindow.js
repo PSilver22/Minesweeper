@@ -126,6 +126,16 @@ class GameWindow {
 				document.getElementById(`${row},${column}`).src = imagePath;
 			}
 		}
+
+		// if the board is not running, that means a mine was clicked.
+		if (!this.board.isRunning) {
+			this.displayLoss();
+		}
+
+		else if (this.board.checkWinCondition()) {
+			this.board.isRunning = false;
+			this.displayWin();
+		}
 	}
 
 	onLeftClick(tagID) {
@@ -137,16 +147,6 @@ class GameWindow {
 			// update the board
 			this.board.activateTile(buttonIndex[0], buttonIndex[1]);
 			this.updateMinefield();
-
-			// if the board is not running, that means a mine was clicked.
-			if (!this.board.isRunning) {
-				this.displayLoss();
-			}
-
-			else if (this.board.checkWinCondition()) {
-				this.board.isRunning = false;
-				this.displayWin();
-			}
 		}
 	}
 
@@ -168,29 +168,16 @@ class GameWindow {
 			// update the board
 			this.board.toggleFlag(buttonIndex[0], buttonIndex[1]);
 			this.updateMinefield();
-
-			if (this.board.checkWinCondition()) {
-				this.board.isRunning = false;
-				this.displayWin();
-			}
 		}
 	}
 
+	// perform the next move and update the board.
 	updateNextMove() {
 		this.board.doNextMove();
-
 		this.updateMinefield();
-
-		if (!this.board.isRunning) {
-			this.displayLoss();
-		}
-
-		else if (this.board.checkWinCondition()) {
-			this.board.isRunning = false;
-			this.displayWin();
-		}
 	}
 
+	// solve the board
 	solve() {
 		if (this.board.isRunning) {
 			this.updateNextMove();
