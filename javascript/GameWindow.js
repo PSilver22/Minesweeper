@@ -16,6 +16,11 @@ class GameWindow {
 		return [row, column];
 	}
 
+	static pause(milliseconds) {
+		let e = new Date().getTime() + milliseconds;
+		while (new Date().getTime() <= e) {};
+	}
+
 	constructor(boardWidth, boardHeight, numOfMines) {
 		GameWindow.tileSize = 16;
 
@@ -168,6 +173,27 @@ class GameWindow {
 				this.board.isRunning = false;
 				this.displayWin();
 			}
+		}
+	}
+
+	updateNextMove() {
+		this.board.doNextMove();
+
+		this.updateMinefield();
+
+		if (!this.board.isRunning) {
+			this.displayLoss();
+		}
+
+		else if (this.board.checkWinCondition()) {
+			this.board.isRunning = false;
+			this.displayWin();
+		}
+	}
+
+	solve() {
+		if (this.board.isRunning) {
+			this.updateNextMove();
 		}
 	}
 }

@@ -311,7 +311,6 @@ class Minefield {
 
 	// If possible, makes a move that is sure to be right.
 	// Returns true if a move was made, false otherwise.
-	// W.I.P
 	performLogicalMove() {
 		// loop through tiles and try to find a sure case
 		for (let row = 0; row < this.height; ++row) {
@@ -327,15 +326,13 @@ class Minefield {
 
 						// if the number of hidden tiles is equal to the key minus number of flagged neighbors, flag a hidden neighbor
 						if (Number(this.map[row][column].key) - flaggedNeighborCount === hiddenNeighborCount) {
-							this.map[neighbor[0]][neighbor[1]].isFlagged = true;
-
+							this.toggleFlag(neighbor[0], neighbor[1]);
 							return true;
 						}
 
 						// if all the bombs are already flagged, open a hidden tile
 						else if (Number(this.map[row][column].key) === flaggedNeighborCount) {
-							this.map[neighbor[0]][neighbor[1]].isHidden = true;
-
+							this.activateTile(neighbor[0], neighbor[1]);
 							return true;
 						}
 					}
@@ -349,15 +346,13 @@ class Minefield {
 	// W.I.P
 	doNextMove() {
 		if (this.isRunning) {
-			
-			// if no note-able tiles have been opened yet, randomly click until a "zero pocket" is reached
 			if (!this.zeroTileOpened) {
 				this.activateRandomTile();
 			}
 
-			// otherwise, use logic to try to figure out which tiles are safe
-			else {
-				
+			else if (!this.performLogicalMove()) {
+				this.isRunning = false;
+				console.log("Done");
 			}
 		}
 	}
